@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  awrass:
+    build: .
+    ports:
+      - "7777:7777"
+    environment:
+      - AWRASS_API_KEY=awrass-secret-2026
+      - AWRASS_POOL_SIZE=2
+      - AWRASS_RATE_LIMIT=20
+      - AWRASS_HEADLESS=true
+      - AWRASS_ARABIC_MODE=true
+      - AWRASS_TIMEOUT=120
+    volumes:
+      - ./cookies.json:/app/cookies.json:ro
+    restart: unless-stopped
+    shm_size: 512m
+

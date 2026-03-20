@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>أوراس — Awrass Dashboard</title>
+  <style>
+    :root {
+      --bg:    #080c10; --bg2: #0f1520; --bg3: #18212e; --border: #2a3a4d;
+      --text:  #d0dce8; --text2: #7a8fa0; --text3: #455565;
+      --green: #00cf7f; --red: #e84040; --accent: #00b4d8;
+      --gold:  #f0b429; --purple: #9f7aea;
+      --font:  'Segoe UI',system-ui,'Noto Sans Arabic',Arial,sans-serif;
+      --mono:  monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);
+         min-height:100vh;padding:0}
+    ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-thumb{background:var(--border)}
+    code{font-family:var(--mono);font-size:.88em;background:var(--bg3);
+         padding:1px 5px;border-radius:4px;color:#ffa657}
+    pre{background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+        padding:16px;overflow-x:auto;font-family:var(--mono);font-size:13px;
+        line-height:1.6;margin:8px 0}
+
+    /* Nav */
+    .nav{background:var(--bg2);border-bottom:1px solid var(--border);
+         padding:0 24px;height:56px;display:flex;align-items:center;
+         justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-brand{display:flex;align-items:center;gap:10px}
+    .nav-brand-ar{font-size:20px;font-weight:800;color:var(--accent)}
+    .nav-brand-en{font-size:13px;color:var(--text3)}
+    .nav-version{font-size:11px;background:var(--bg3);color:var(--text2);
+                  padding:2px 8px;border-radius:10px;border:1px solid var(--border)}
+    .nav-right{display:flex;gap:10px;align-items:center}
+    .btn-docs{background:var(--bg3);color:var(--accent);border:1px solid var(--border);
+               padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;
+               text-decoration:none}
+
+    /* Layout */
+    .container{max-width:1200px;margin:0 auto;padding:24px 20px;
+                display:flex;flex-direction:column;gap:20px}
+
+    /* Status hero */
+    .status-hero{background:var(--bg2);border:1px solid var(--border);
+                  border-radius:10px;padding:24px;display:flex;
+                  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .status-left h2{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+    .status-left p{font-size:13px;color:var(--text2)}
+    .status-indicator{display:flex;align-items:center;gap:8px;
+                       background:var(--bg3);padding:8px 16px;border-radius:20px;
+                       border:1px solid var(--border)}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--text3)}
+    .dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+    .dot.red  {background:var(--red);box-shadow:0 0 6px var(--red)}
+    .dot.yellow{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+
+    /* Stats grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+               padding:16px;text-align:center}
+    .stat-num{font-size:32px;font-weight:800;color:var(--accent);margin-bottom:4px}
+    .stat-label{font-size:12px;color:var(--text2)}
+    .stat-num.green{color:var(--green)}
+    .stat-num.red  {color:var(--red)}
+    .stat-num.gold {color:var(--gold)}
+
+    /* Cards */
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:16px;
+                display:flex;align-items:center;gap:8px}
+
+    /* Quick start */
+    .tab-bar{display:flex;gap:4px;margin-bottom:14px}
+    .tab{background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+          padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;
+          font-family:var(--font)}
+    .tab.active{background:rgba(0,180,216,.1);border-color:var(--accent);color:var(--accent)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+
+    /* Request log table */
+    .log-table{width:100%;border-collapse:collapse;font-size:12px}
+    .log-table th{color:var(--text2);text-align:right;padding:6px 10px;
+                   border-bottom:1px solid var(--border);font-weight:600;font-size:11px}
+    .log-table td{padding:7px 10px;border-bottom:1px solid rgba(42,58,77,.4);
+                   vertical-align:middle}
+    .log-table tr:hover td{background:var(--bg3)}
+    .badge-ok {background:rgba(0,207,127,.12);color:var(--green);padding:2px 7px;
+               border-radius:8px;font-size:10px}
+    .badge-err{background:rgba(232,64,64,.12);color:var(--red);padding:2px 7px;
+               border-radius:8px;font-size:10px}
+
+    /* Pool status */
+    .pool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+    .session-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+                  padding:10px;text-align:center;font-size:12px}
+    .session-box.busy{border-color:var(--gold);background:rgba(240,180,41,.06)}
+    .session-box.free{border-color:var(--green);background:rgba(0,207,127,.05)}
+    .sb-icon{font-size:22px;margin-bottom:4px}
+    .sb-label{color:var(--text2);font-size:10px}
+
+    /* Config snippet */
+    .config-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .config-item{background:var(--bg3);border:1px solid var(--border);
+                  border-radius:8px;padding:12px}
+    .cfg-key{font-size:11px;color:var(--text2);margin-bottom:4px}
+    .cfg-val{font-family:var(--mono);font-size:12px;color:var(--accent)}
+
+    .refresh-note{font-size:11px;color:var(--text3);margin-top:8px;text-align:center}
+
+    @media(max-width:640px){.config-grid{grid-template-columns:1fr}}
+    @media(max-width:480px){.stats-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <span style="font-size:24px">🏔</span>
+    <div>
+      <div class="nav-brand-ar">أوراس — Awrass</div>
+      <div class="nav-brand-en">ChatGPT Proxy — OpenAI Compatible</div>
+    </div>
+    <span class="nav-version">v2.0</span>
+  </div>
+  <div class="nav-right">
+    <a href="/docs" class="btn-docs" target="_blank">📖 API Docs</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Status -->
+  <div class="status-hero">
+    <div class="status-left">
+      <h2>لوحة تحكم أوراس | Awrass Control Panel</h2>
+      <p>خادم OpenAI Proxy مجاني — ChatGPT Web كـ API احترافية</p>
+    </div>
+    <div id="status-indicator" class="status-indicator">
+      <span class="dot yellow" id="status-dot"></span>
+      <span id="status-text">جاري التحقق...</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="s-total">—</div><div class="stat-label">إجمالي الطلبات</div></div>
+    <div class="stat-card"><div class="stat-num green" id="s-ok">—</div><div class="stat-label">طلبات ناجحة</div></div>
+    <div class="stat-card"><div class="stat-num red" id="s-err">—</div><div class="stat-label">أخطاء</div></div>
+    <div class="stat-card"><div class="stat-num gold" id="s-lat">—</div><div class="stat-label">متوسط الزمن (ms)</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-free">—</div><div class="stat-label">جلسات متاحة</div></div>
+    <div class="stat-card"><div class="stat-num gold" id="s-busy">—</div><div class="stat-label">جلسات مشغولة</div></div>
+  </div>
+
+  <!-- Quick Start -->
+  <div class="card">
+    <div class="card-title">🚀 البدء السريع | Quick Start</div>
+    <div class="tab-bar">
+      <button class="tab active" onclick="showTab('curl')">cURL</button>
+      <button class="tab" onclick="showTab('python')">Python</button>
+      <button class="tab" onclick="showTab('n8n')">n8n</button>
+      <button class="tab" onclick="showTab('js')">JavaScript</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-curl">
+<pre>curl -X POST http://localhost:7777/v1/chat/completions \
+  -H "Authorization: Bearer awrass-secret-2026" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "مرحبا!"}]
+  }'</pre>
+    </div>
+
+    <div class="tab-panel" id="tab-python">
+<pre>from openai import OpenAI
+
+client = OpenAI(
+    api_key="awrass-secret-2026",
+    base_url="http://localhost:7777/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "مرحبا! كيف حالك؟"}]
+)
+print(response.choices[0].message.content)</pre>
+    </div>
+
+    <div class="tab-panel" id="tab-n8n">
+<pre># n8n — OpenAI Node
+# 1. أضف بيانات اعتماد OpenAI جديدة
+# 2. Base URL: http://0.0.0.0:7777/v1
+# 3. API Key: awrass-secret-2026
+# 4. استخدم هذه البيانات في أي AI Agent node
+
+# n8n — HTTP Node
+POST http://0.0.0.0:7777/v1/chat/completions
+Authorization: Bearer awrass-secret-2026
+Body:
+{
+  "model": "gpt-4o-mini",
+  "messages": [{"role": "user", "content": "{{ $json.query }}"}]
+}</pre>
+    </div>
+
+    <div class="tab-panel" id="tab-js">
+<pre>const response = await fetch('http://localhost:7777/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer awrass-secret-2026',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: 'مرحبا!' }]
+  })
+});
+const data = await response.json();
+console.log(data.choices[0].message.content);</pre>
+    </div>
+  </div>
+
+  <!-- Browser Pool -->
+  <div class="card">
+    <div class="card-title">🖥 حالة Pool المتصفح | Browser Pool Status</div>
+    <div class="pool-grid" id="pool-grid">
+      <div class="session-box"><div class="sb-icon">⏳</div><div class="sb-label">جاري التحميل...</div></div>
+    </div>
+  </div>
+
+  <!-- Request Log -->
+  <div class="card">
+    <div class="card-title">📊 سجل الطلبات الأخيرة | Recent Request Log</div>
+    <div style="overflow-x:auto">
+      <table class="log-table" id="log-table">
+        <thead>
+          <tr>
+            <th>الوقت</th>
+            <th>المفتاح</th>
+            <th>النموذج</th>
+            <th>المسار</th>
+            <th>الزمن (ms)</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody id="log-body">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">لا توجد طلبات بعد</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refresh-note">يتحدث كل 5 ثوانٍ | Auto-refreshes every 5s</p>
+  </div>
+
+  <!-- Config -->
+  <div class="card">
+    <div class="card-title">⚙ متغيرات البيئة | Environment Variables</div>
+    <div class="config-grid">
+      <div class="config-item"><div class="cfg-key">AWRASS_API_KEY</div><div class="cfg-val">مفتاح API الرئيسي</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_EXTRA_KEYS</div><div class="cfg-val">مفاتيح إضافية (فاصلة)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_POOL_SIZE</div><div class="cfg-val">عدد جلسات المتصفح (default: 2)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_RATE_LIMIT</div><div class="cfg-val">طلبات/دقيقة لكل مفتاح (default: 20)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_TIMEOUT</div><div class="cfg-val">مهلة كل طلب ثانية (default: 120)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_ARABIC_MODE</div><div class="cfg-val">وضع اللغة العربية (default: true)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_COOKIE_FILE</div><div class="cfg-val">ملف كوكيز تسجيل الدخول</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_HEADLESS</div><div class="cfg-val">متصفح مخفي (default: true)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_PORT</div><div class="cfg-val">المنفذ (default: 7777)</div></div>
+      <div class="config-item"><div class="cfg-key">AWRASS_CHATGPT_URL</div><div class="cfg-val">رابط ChatGPT (default: chatgpt.com)</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab,.tab-panel').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+async function refresh() {
+  try {
+    const [health, stats] = await Promise.all([
+      fetch('/health').then(r => r.json()),
+      fetch('/stats', {headers:{'Authorization':'Bearer awrass-secret-2026'}}).then(r => r.json()).catch(()=>({}))
+    ]);
+
+    // Status
+    const dot  = document.getElementById('status-dot');
+    const txt  = document.getElementById('status-text');
+    if (health.status === 'ok') {
+      dot.className = 'dot green';
+      txt.textContent = `✅ يعمل — ${health.pool_stats?.free_sessions || '?'} جلسات متاحة`;
+    } else {
+      dot.className = 'dot yellow';
+      txt.textContent = '⚠ وضع محدود — المتصفح غير متاح';
+    }
+
+    // Stats
+    if (stats.total_requests !== undefined) {
+      document.getElementById('s-total').textContent = stats.total_requests;
+      document.getElementById('s-ok').textContent    = stats.successful;
+      document.getElementById('s-err').textContent   = stats.errors;
+      document.getElementById('s-lat').textContent   = stats.avg_latency_ms + 'ms';
+    }
+    const ps = health.pool_stats || {};
+    document.getElementById('s-free').textContent = ps.free_sessions ?? '—';
+    document.getElementById('s-busy').textContent = ps.busy_sessions ?? '—';
+
+    // Pool grid
+    const poolSize = ps.pool_size || 0;
+    const busyN    = ps.busy_sessions || 0;
+    const grid     = document.getElementById('pool-grid');
+    grid.innerHTML = '';
+    for (let i = 0; i < Math.max(poolSize, 1); i++) {
+      const busy = i < busyN;
+      grid.innerHTML += `
+        <div class="session-box ${busy ? 'busy' : 'free'}">
+          <div class="sb-icon">${busy ? '⚙' : '✅'}</div>
+          <div style="font-size:11px;color:var(--text)">جلسة ${i+1}</div>
+          <div class="sb-label">${busy ? 'مشغولة' : 'متاحة'}</div>
+        </div>`;
+    }
+
+    // Log table
+    const recent = stats.recent || [];
+    const tbody  = document.getElementById('log-body');
+    if (recent.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">لا توجد طلبات بعد</td></tr>';
+    } else {
+      tbody.innerHTML = recent.map(r => {
+        const t = new Date(r.ts * 1000).toLocaleTimeString('ar');
+        return `<tr>
+          <td>${t}</td>
+          <td><code>${r.key}</code></td>
+          <td>${r.model}</td>
+          <td><code>${r.endpoint}</code></td>
+          <td>${r.latency_ms}</td>
+          <td><span class="${r.success ? 'badge-ok' : 'badge-err'}">${r.success ? '✓ نجح' : '✗ خطأ'}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+  } catch (e) {
+    document.getElementById('status-text').textContent = '⚠ فشل التحميل';
+  }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
